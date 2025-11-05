@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dijkstra Route Finder - Pune City</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAbukOMoh-_w7xKb0q1VNvavXFK2WLR28E&libraries=places&callback=initMap" async defer></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚗 Dijkstra Route Finder</h1>
+            <p class="subtitle">Find the shortest route in Pune City using Dijkstra's Algorithm</p>
+        </header>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="section">
+                    <h2>📍 Add Locations</h2>
+                    <div class="input-group">
+                        <input 
+                            type="text" 
+                            id="locationInput" 
+                            placeholder="Enter location in Pune (e.g., Viman Nagar)"
+                            autocomplete="off"
+                        >
+                        <button onclick="addLocation()">Add Location</button>
+                    </div>
+                    <div id="locationsList" class="locations-list"></div>
+                </div>
+
+                <div class="section">
+                    <h2>🎯 Find Route</h2>
+                    <div class="input-group">
+                        <select id="startSelect">
+                            <option value="">Select Start Point</option>
+                        </select>
+                        <select id="endSelect">
+                            <option value="">Select End Point</option>
+                        </select>
+                    </div>
+                    <button class="btn-primary" onclick="findRoute()">Find Shortest Route</button>
+                </div>
+
+                <div class="section">
+                    <h2>🧭 Add Edge (Custom)</h2>
+                    <div class="input-group">
+                        <select id="edgeFromSelect">
+                            <option value="">From</option>
+                        </select>
+                        <select id="edgeToSelect">
+                            <option value="">To</option>
+                        </select>
+                        <input type="number" id="edgeWeight" min="1" step="0.1" placeholder="Weight (minutes, optional)" />
+                        <label style="display:flex;align-items:center;gap:8px;">
+                            <input type="checkbox" id="edgeBidirectional" checked /> Bidirectional
+                        </label>
+                    </div>
+                    <button class="btn-primary" onclick="addEdge()">Add Edge</button>
+                </div>
+
+                <div class="section" id="routeResult" style="display: none;">
+                    <h2>📍 Route Details</h2>
+                    <div id="routeInfo"></div>
+                </div>
+
+                <div class="section">
+                    <button class="btn-secondary" onclick="clearAll()">Clear All</button>
+                </div>
+            </div>
+
+            <div class="map-container">
+                <div id="map"></div>
+                <div id="mapLoading" class="loading">Loading map...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+

@@ -6,7 +6,7 @@ A Data Structures and Algorithms project implementing algorithms to find the sho
 
 - **Interactive Map**: Google Maps integration showing Pune city
 - **Multiple Locations**: Add multiple locations to create a route network
-- **Shortest Path**: Find the shortest route based on travel time using Dijkstra's algorithm
+- **Shortest Path**: Find the shortest route based on travel time using  algorithms
 - **Real-time Data**: Uses Google Maps API to get real coordinates and driving times
 - **Visual Route Display**: Shows the calculated route on the map with markers
 

@@ -95,15 +95,22 @@ The server will start on `http://localhost:5000`
    - Click "Add Location" or press Enter
    - Add multiple locations to create your network
 
-2. **Build Graph**:
-   - After adding at least 2 locations, click "Build Graph"
-   - This calculates driving times between all locations using Google Maps API
+2. **Create Connections** (Choose one option):
+   
+   **Option A: Manual Edges**
+   - Select "From" and "To" locations from dropdowns
+   - Optionally enter a distance (km) - if left blank, distance will be auto-calculated using Google Maps
+   - Click "Add Edge"
+   
+   **Option B: Auto-Build Graph**
+   - After adding at least 2 locations, click "Build Graph (Auto-connect all locations)"
+   - This automatically calculates driving distances between all location pairs using Google Maps API
 
 3. **Find Route**:
    - Select a start point from the dropdown
-   - Select an end point from the dropdown
-   - Click "Find Shortest Route"
-   - The route will be displayed on the map with the shortest time
+   - Select an end point from the dropdown  
+   - Click "Find Route"
+   - The shortest route will be calculated using Dijkstra's algorithm and displayed on the map
 
 4. **Clear All**: Click "Clear All" to reset and start fresh
 
@@ -117,11 +124,23 @@ Add a location to the system
 }
 ```
 
+### `POST /api/edges`
+Add a custom edge between locations (optional distance auto-computation)
+```json
+{
+  "from": "Viman Nagar",
+  "to": "Hinjawadi",
+  "weight": 15.5,  // optional - if omitted, distance will be auto-calculated
+  "metric": "distance"  // "distance" (km) or "time" (minutes)
+}
+```
+
 ### `POST /api/locations/build-graph`
 Build graph from list of locations
 ```json
 {
-  "locations": ["Viman Nagar", "Hinjawadi", "Kothrud"]
+  "locations": ["Viman Nagar", "Hinjawadi", "Kothrud"],
+  "mode": "all_pairs"  // creates edges between all location pairs
 }
 ```
 

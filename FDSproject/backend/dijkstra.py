@@ -40,6 +40,21 @@ class Graph:
         """Get all vertices in the graph"""
         return self.vertices
 
+    def copy_excluding_direct_connection(self, a: str, b: str) -> "Graph":
+        """
+        Deep copy of the graph with all directed edges between a and b removed
+        (both a→b and b→a). Used to force a route with at least one other vertex
+        between start and end when a direct edge exists.
+        """
+        new_g = Graph()
+        for u, nbrs in self.graph.items():
+            for v, w in nbrs:
+                if (u == a and v == b) or (u == b and v == a):
+                    continue
+                new_g.add_edge(u, v, w)
+        new_g.vertices = set(self.vertices)
+        return new_g
+
 
 class Dijkstra:
     """
@@ -58,55 +73,62 @@ class Dijkstra:
         Returns:
             Tuple of (path as list of vertices, total_time) or (None, None) if no path exists
         """
+        for u in list(self.graph.graph.keys()):
+            self.graph.vertices.add(u)
+            for v, _ in self.graph.graph[u]:
+                self.graph.vertices.add(v)
+
         if start not in self.graph.vertices or end not in self.graph.vertices:
             return None, None
         
-        # Priority Queue (Min Heap): (distance, vertex)
-        # Using tuple (distance, vertex) for automatic min-heap behavior
+       
         priority_queue: List[Tuple[float, str]] = []
         heapq.heappush(priority_queue, (0, start))
         
-        # Distance dictionary: vertex -> shortest distance from start
+        
         distances: Dict[str, float] = {v: float('inf') for v in self.graph.vertices}
         distances[start] = 0
         
-        # Previous vertex dictionary for path reconstruction
+        
         previous: Dict[str, Optional[str]] = {v: None for v in self.graph.vertices}
         
-        # Visited set to track processed vertices
+        
         visited: set = set()
         
         while priority_queue:
-            # Extract vertex with minimum distance
+            
             current_distance, current_vertex = heapq.heappop(priority_queue)
             
-            # Skip if already visited with a shorter path
+            
             if current_vertex in visited:
                 continue
             
-            # Mark as visited
+           
             visited.add(current_vertex)
             
-            # If we reached the destination, reconstruct path
+            
             if current_vertex == end:
                 path = self._reconstruct_path(previous, start, end)
                 return path, distances[end]
             
-            # Explore neighbors
+            
             for neighbor, edge_weight in self.graph.get_neighbors(current_vertex):
                 if neighbor in visited:
                     continue
-                
-                # Calculate new distance
+
+                if neighbor not in distances:
+                    distances[neighbor] = float('inf')
+                    previous[neighbor] = None
+
                 new_distance = current_distance + edge_weight
                 
-                # If found shorter path, update
+                
                 if new_distance < distances[neighbor]:
                     distances[neighbor] = new_distance
                     previous[neighbor] = current_vertex
                     heapq.heappush(priority_queue, (new_distance, neighbor))
         
-        # No path found
+        
         return None, None
     
     def _reconstruct_path(self, previous: Dict[str, Optional[str]], start: str, end: str) -> List[str]:
@@ -126,18 +148,23 @@ class Dijkstra:
         Find shortest distances from start to all other vertices
         Useful for finding multiple destinations
         """
+        for u in list(self.graph.graph.keys()):
+            self.graph.vertices.add(u)
+            for v, _ in self.graph.graph[u]:
+                self.graph.vertices.add(v)
+
         if start not in self.graph.vertices:
             return {}
         
-        # Priority Queue
+        
         priority_queue: List[Tuple[float, str]] = []
         heapq.heappush(priority_queue, (0, start))
         
-        # Distance dictionary
+        
         distances: Dict[str, float] = {v: float('inf') for v in self.graph.vertices}
         distances[start] = 0
         
-        # Visited set
+        
         visited: set = set()
         
         while priority_queue:
@@ -148,11 +175,14 @@ class Dijkstra:
             
             visited.add(current_vertex)
             
-            # Explore neighbors
+            
             for neighbor, edge_weight in self.graph.get_neighbors(current_vertex):
                 if neighbor in visited:
                     continue
-                
+
+                if neighbor not in distances:
+                    distances[neighbor] = float('inf')
+
                 new_distance = current_distance + edge_weight
                 
                 if new_distance < distances[neighbor]:

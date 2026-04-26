@@ -1,6 +1,6 @@
 
 
-A Data Structures and Algorithms project implementing Dijkstra's algorithm to find the shortest route in Pune city using time as the weight metric.
+A Data Structures and Algorithms project implementing algorithms to find the shortest route in Pune city using time as the weight metric.
 
 ## 🎯 Features
 

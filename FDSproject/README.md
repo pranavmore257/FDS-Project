@@ -1,14 +1,19 @@
 
 
-A Data Structures and Algorithms project implementing Dijkstra's algorithm to find the shortest route in Pune city using time as the weight metric.
+A comprehensive Data Structures and Algorithms project implementing **three shortest-path algorithms** (Dijkstra, Bellman-Ford, Floyd-Warshall) to find the shortest route in Pune city using time as the weight metric. Includes algorithm comparison, performance analysis, and visual route display.
 
 ## 🎯 Features
 
+- **Multiple Algorithms**: Compare three shortest-path algorithms:
+  - **Dijkstra's Algorithm** (single-source, non-negative weights) - O((V + E) log V)
+  - **Bellman-Ford Algorithm** (negative weights, cycle detection) - O(V × E)
+  - **Floyd-Warshall Algorithm** (all-pairs shortest paths) - O(V³)
+- **Algorithm Comparison**: Run all three algorithms side-by-side and see execution times
 - **Interactive Map**: Google Maps integration showing Pune city
 - **Multiple Locations**: Add multiple locations to create a route network
-- **Shortest Path**: Find the shortest route based on travel time using Dijkstra's algorithm
 - **Real-time Data**: Uses Google Maps API to get real coordinates and driving times
-- **Visual Route Display**: Shows the calculated route on the map with markers
+- **Visual Route Display**: Shows calculated routes on the map with markers
+- **Performance Metrics**: Execution time measurements for each algorithm
 
 ## 🏗️ Project Structure
 
@@ -135,11 +140,24 @@ The server will start on `http://localhost:5000`
    - After adding at least 2 locations, click "Build Graph (Auto-connect all locations)"
    - This automatically calculates driving distances between all location pairs using Google Maps API
 
-3. **Find Route**:
+3. **Find Route** (Choose one option):
+   
+   **Option A: Single Algorithm**
    - Select a start point from the dropdown
-   - Select an end point from the dropdown  
+   - Select an end point from the dropdown
+   - Choose algorithm: Dijkstra, Bellman-Ford, or Floyd-Warshall
    - Click "Find Route"
-   - The shortest route will be calculated using Dijkstra's algorithm and displayed on the map
+   - The shortest route will be calculated and displayed on the map
+   
+   **Option B: Algorithm Comparison**
+   - Select a start point and end point
+   - Click "Compare All Algorithms"
+   - All three algorithms will run simultaneously
+   - View side-by-side comparison with:
+     - Calculated path
+     - Total distance
+     - Execution time
+     - Algorithm-specific metrics (e.g., negative cycle detection for Bellman-Ford)
 
 4. **Clear All**: Click "Clear All" to reset and start fresh
 
@@ -203,16 +221,27 @@ Get current graph structure
 ### Pathfinding Endpoints
 
 #### `POST /api/route`
-Find shortest route using Python Dijkstra's algorithm
+Find shortest route using Python Dijkstra's algorithm (single algorithm)
 ```json
 {
   "start": "Viman Nagar",
   "end": "Hinjawadi"
 }
 ```
+**Response:**
+```json
+{
+  "path": ["Viman Nagar", "...", "Hinjawadi"],
+  "distance": 45.5,
+  "executionTimeMs": 2,
+  "algorithm": "Dijkstra"
+}
+```
+
+### Algorithm Comparison Endpoint
 
 #### `POST /api/algorithms/compare`
-Run all three Java algorithms and compare results
+Run all three algorithms and compare results side-by-side
 ```json
 {
   "start": "Viman Nagar",
@@ -229,18 +258,25 @@ Run all three Java algorithms and compare results
     "algorithm": "Dijkstra"
   },
   "bellmanFord": {
-    "path": [...],
+    "path": ["Viman Nagar", "...", "Hinjawadi"],
     "distance": 45.5,
     "executionTimeMs": 5,
-    "hasNegativeCycle": false
+    "hasNegativeCycle": false,
+    "algorithm": "Bellman-Ford"
   },
   "floydWarshall": {
-    "allPairs": {...},
+    "path": ["Viman Nagar", "...", "Hinjawadi"],
     "distance": 45.5,
-    "executionTimeMs": 8
-  }
+    "allPairsDistances": {...},
+    "executionTimeMs": 8,
+    "algorithm": "Floyd-Warshall"
+  },
+  "fastest": "Dijkstra",
+  "comparisonTime": "2 vs 5 vs 8 ms"
 }
 ```
+
+### Individual Algorithm Endpoints
 
 #### `POST /api/algorithms/dijkstra`
 Run only Dijkstra's algorithm (Java version)
@@ -249,7 +285,7 @@ Run only Dijkstra's algorithm (Java version)
 Run only Bellman-Ford algorithm
 
 #### `POST /api/algorithms/floydwarshall`
-Run only Floyd-Warshall algorithm
+Run only Floyd-Warshall algorithm (all-pairs shortest paths)
 
 ## 🧮 Algorithm Implementation Details
 

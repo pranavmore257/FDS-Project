@@ -71,12 +71,12 @@ doc.add_heading('1.2 How Does Hashing Work?', level=2)
 doc.add_paragraph('''
 Step-by-step process when you add a location:
 
-EXAMPLE: Adding "Viman Nagar" location to hashtable
+EXAMPLE: Adding "Katraj" location to hashtable
 
 1. HASH FUNCTION:
-   Input: "viman nagar" (converted to lowercase)
+   Input: "katraj" (converted to lowercase)
    Hash Code: hashCode() method generates an integer
-   Example: "viman nagar".hashCode() = 1234567890
+   Example: "katraj".hashCode() = 1234567890
    
 2. INDEX CALCULATION:
    hashIndex = hashCode % tableSize
@@ -86,11 +86,11 @@ EXAMPLE: Adding "Viman Nagar" location to hashtable
 3. STORAGE AT BUCKET:
    Location object stored at bucket[10]
    bucket[10] = Location{
-       name: "Viman Nagar",
-       latitude: 18.5595,
-       longitude: 73.9278,
+       name: "Katraj",
+       latitude: 18.4767,
+       longitude: 73.8409,
        geocodeSource: "google",
-       matchedPlace: "Viman Nagar, Pune"
+       matchedPlace: "Katraj, Pune"
    }
 ''')
 
@@ -105,7 +105,7 @@ add_code_block(doc, '''public class LocationHashtable implements Serializable {
     
     // Inner class to store location data
     public static class Location implements Serializable {
-        public String name;              // Original name: "Viman Nagar"
+        public String name;              // Original name: "Katraj"
         public double latitude;          // Coordinates
         public double longitude;
         public String geocodeSource;     // Where data came from (google/osm)
@@ -153,19 +153,19 @@ doc.add_paragraph('''
 DETAILED FLOW WITH EXAMPLE:
 
 1. Input Data:
-   name = "Viman Nagar"
-   latitude = 18.5595
-   longitude = 73.9278
+   name = "Katraj"
+   latitude = 18.4767
+   longitude = 73.8409
    geocodeSource = "google"
-   matchedPlace = "Viman Nagar, Pune, Maharashtra"
+   matchedPlace = "Katraj, Pune, Maharashtra"
 
 2. Object Creation:
    Location object is created with all these fields
    
 3. Key Normalization:
-   key = "viman nagar" (converted to lowercase)
+   key = "katraj" (converted to lowercase)
    Why lowercase? For case-insensitive lookup
-   Now both "Viman Nagar" and "VIMAN NAGAR" will find same entry
+   Now both "Katraj" and "KATRAJ" will find same entry
    
 4. Hashing:
    hashCode = key.hashCode()
@@ -196,16 +196,16 @@ add_code_block(doc, '''public synchronized Location getLocation(String name) {
 doc.add_paragraph('''
 DETAILED RETRIEVAL FLOW WITH EXAMPLE:
 
-SCENARIO: User searches for location "Viman Nagar"
+SCENARIO: User searches for location "Katraj"
 
 1. Input:
-   searchName = "Viman Nagar"
+   searchName = "Katraj"
    
 2. Key Normalization:
-   key = "viman nagar" (lowercase)
+   key = "katraj" (lowercase)
    
 3. Hashing (same process):
-   hashCode = "viman nagar".hashCode()
+   hashCode = "katraj".hashCode()
    index = hashCode % tableSize
    
 4. Direct Array Access:
@@ -227,7 +227,7 @@ TIME COMPLEXITY:
    Worst case: O(n) if all items hash to same index (rare with good hash function)
 
 EXAMPLE RETRIEVAL:
-   Location loc = hashtable.getLocation("Viman Nagar");
+   Location loc = hashtable.getLocation("Katraj");
    if (loc != null) {
        System.out.println("Found: " + loc.name);
        System.out.println("Coordinates: " + loc.latitude + ", " + loc.longitude);
@@ -240,13 +240,13 @@ doc.add_paragraph('Check if location exists:')
 add_code_block(doc, '''public synchronized boolean hasLocation(String name) {
     return locations.containsKey(name.toLowerCase());  // O(1)
 }
-// Usage: if (hashtable.hasLocation("Mumbai")) { ... }''')
+// Usage: if (hashtable.hasLocation("Baner")) { ... }''')
 
 doc.add_paragraph('Remove a location:')
 add_code_block(doc, '''public synchronized Location removeLocation(String name) {
     return locations.remove(name.toLowerCase());  // O(1)
 }
-// Usage: hashtable.removeLocation("Pune");''')
+// Usage: hashtable.removeLocation("Wakad");''')
 
 doc.add_paragraph('Get all locations:')
 add_code_block(doc, '''public synchronized Hashtable<String, Location> getAllLocations() {

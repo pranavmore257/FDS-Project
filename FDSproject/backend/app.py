@@ -200,19 +200,37 @@ def get_driving_time(origin: Tuple[float, float], destination: Tuple[float, floa
 
 def get_driving_distance(origin: Tuple[float, float], destination: Tuple[float, float]) -> float:
     """
-    Get driving distance between two coordinates using Google Distance Matrix API
+    Get driving distance between two coordinates using OSRM first (more accurate for India)
+    Falls back to Google Distance Matrix API, then haversine as last resort
     Returns: distance in kilometers
     """
-    url = "https://maps.googleapis.com/maps/api/distancematrix/json"
-    params = {
-        "origins": f"{origin[0]},{origin[1]}",
-        "destinations": f"{destination[0]},{destination[1]}",
-        "mode": "driving",
-        "key": GOOGLE_MAPS_API_KEY,
-        "units": "metric"
-    }
-
+    
+    # Try OSRM first - generally more accurate for Indian roads
     try:
+        coord_str = f"{origin[1]},{origin[0]};{destination[1]},{destination[0]}"
+        url = f"https://router.project-osrm.org/route/v1/driving/{coord_str}"
+        params = {"overview": "false"}
+        
+        response = requests.get(url, params=params, timeout=10)
+        data = response.json()
+        
+        if data.get("code") == "Ok" and data.get("routes") and len(data["routes"]) > 0:
+            distance_meters = data["routes"][0]["distance"]
+            return distance_meters / 1000.0
+    except Exception as e:
+        print(f"OSRM distance failed, trying Google: {e}")
+    
+    # Fall back to Google Distance Matrix API
+    try:
+        url = "https://maps.googleapis.com/maps/api/distancematrix/json"
+        params = {
+            "origins": f"{origin[0]},{origin[1]}",
+            "destinations": f"{destination[0]},{destination[1]}",
+            "mode": "driving",
+            "key": GOOGLE_MAPS_API_KEY,
+            "units": "metric"
+        }
+        
         response = requests.get(url, params=params, timeout=10)
         data = response.json()
 
@@ -222,10 +240,12 @@ def get_driving_distance(origin: Tuple[float, float], destination: Tuple[float, 
                 # meters to kilometers
                 distance_meters = element["distance"]["value"]
                 return distance_meters / 1000.0
-        return haversine_km(origin[0], origin[1], destination[0], destination[1])
     except Exception as e:
-        print(f"Error fetching driving distance: {e}")
-        return haversine_km(origin[0], origin[1], destination[0], destination[1])
+        print(f"Google Distance Matrix failed: {e}")
+    
+    # Last resort: haversine (straight-line distance)
+    print("Using haversine (straight-line) distance as fallback")
+    return haversine_km(origin[0], origin[1], destination[0], destination[1])
 
 
 def fetch_osrm_duration_matrix(lat_lng_list: List[Tuple[float, float]]) -> Optional[List[List[Optional[float]]]]:

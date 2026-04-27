@@ -264,20 +264,21 @@ function removeEdge(index) {
     }
 }
 
-function drawEdges() {
+async function drawEdges() {
     // Remove existing edge markers
     edgeMarkers.forEach(marker => map.removeLayer(marker));
     edgeMarkers = [];
     
     // Draw new edges
-    edges.forEach(edge => {
+    for (const edge of edges) {
         const fromLoc = locations.find(loc => loc.name === edge.from);
         const toLoc = locations.find(loc => loc.name === edge.to);
         
         if (fromLoc && toLoc) {
-            // Create a polyline for the edge
+            // Create initial straight line and loading label
+            const initialLinePoints = [[fromLoc.lat, fromLoc.lng], [toLoc.lat, toLoc.lng]];
             const polyline = L.polyline(
-                [[fromLoc.lat, fromLoc.lng], [toLoc.lat, toLoc.lng]],
+                initialLinePoints,
                 { 
                     color: '#3b82f6',
                     weight: 3,
@@ -285,26 +286,102 @@ function drawEdges() {
                 }
             ).addTo(map);
             
-            // Add distance label in the middle of the edge
-            const midPoint = L.latLng(
+            // Initial geographic midpoint for loading label
+            const initialMidPoint = L.latLng(
                 (fromLoc.lat + toLoc.lat) / 2,
                 (fromLoc.lng + toLoc.lng) / 2
             );
             
             const unit = edge.unit || 'km';
             const w = typeof edge.distance === 'number' ? edge.distance.toFixed(1) : edge.distance;
-            const label = L.marker(midPoint, {
+            
+            // Create loading label first
+            const label = L.marker(initialMidPoint, {
                 icon: L.divIcon({
-                    className: 'edge-label',
-                    html: `${w} ${unit}`,
+                    className: 'edge-label loading',
+                    html: `Loading...`,
                     iconSize: [60, 20]
                 }),
                 interactive: false
             }).addTo(map);
             
             edgeMarkers.push(polyline, label);
+            
+            // Try to get real road geometry from OSRM
+            const roadGeometry = await fetchRoadGeometry([[fromLoc.lat, fromLoc.lng], [toLoc.lat, toLoc.lng]]);
+            
+            // Update with real road geometry if available
+            if (roadGeometry) {
+                // Remove initial polyline and replace with road geometry
+                map.removeLayer(polyline);
+                const roadPolyline = L.polyline(
+                    roadGeometry,
+                    { 
+                        color: '#3b82f6',
+                        weight: 3,
+                        dashArray: '5, 5'
+                    }
+                ).addTo(map);
+                
+                // Update label position and content
+                const middleIndex = Math.floor(roadGeometry.length / 2);
+                const roadMidPoint = L.latLng(roadGeometry[middleIndex][0], roadGeometry[middleIndex][1]);
+                
+                map.removeLayer(label);
+                const finalLabel = L.marker(roadMidPoint, {
+                    icon: L.divIcon({
+                        className: 'edge-label',
+                        html: `${w} ${unit}`,
+                        iconSize: [60, 20]
+                    }),
+                    interactive: false
+                }).addTo(map);
+                
+                // Replace in edgeMarkers array
+                const polylineIndex = edgeMarkers.indexOf(polyline);
+                const labelIndex = edgeMarkers.indexOf(label);
+                if (polylineIndex !== -1) edgeMarkers[polylineIndex] = roadPolyline;
+                if (labelIndex !== -1) edgeMarkers[labelIndex] = finalLabel;
+            } else {
+                // Update loading label to show final distance if road geometry failed
+                map.removeLayer(label);
+                const finalLabel = L.marker(initialMidPoint, {
+                    icon: L.divIcon({
+                        className: 'edge-label',
+                        html: `${w} ${unit}`,
+                        iconSize: [60, 20]
+                    }),
+                    interactive: false
+                }).addTo(map);
+                
+                const labelIndex = edgeMarkers.indexOf(label);
+                if (labelIndex !== -1) edgeMarkers[labelIndex] = finalLabel;
+            }
         }
-    });
+    }
+}
+
+// Helper function to fetch road geometry from OSRM
+async function fetchRoadGeometry(lat_lng_pairs) {
+    if (lat_lng_pairs.length < 2) return null;
+    
+    const coord_str = lat_lng_pairs.map(([lat, lng]) => `${lng},${lat}`).join(';');
+    const url = `https://router.project-osrm.org/route/v1/driving/${coord_str}`;
+    
+    try {
+        const response = await fetch(`${url}?overview=full&geometries=geojson`);
+        
+        if (!response.ok) return null;
+        
+        const data = await response.json();
+        if (data.code !== 'Ok' || !data.routes || data.routes.length === 0) return null;
+        
+        const coords = data.routes[0].geometry.coordinates;
+        return coords.map(([lng, lat]) => [lat, lng]);
+    } catch (error) {
+        console.warn('Failed to fetch road geometry for edge:', error);
+        return null;
+    }
 }
 
 // Helper functions
